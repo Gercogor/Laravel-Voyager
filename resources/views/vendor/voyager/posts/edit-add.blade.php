@@ -101,7 +101,15 @@
                                 '_field_name'  => 'title',
                                 '_field_trans' => get_field_translations($dataTypeContent, 'title')
                             ])
-                            <textarea class="form-control" id="title" name="title" placeholder="{{ __('voyager::generic.title') }}" value="{{ $dataTypeContent->title ?? '' }}"></textarea>
+                            @php
+                                $dataTypeRows = $dataType->{($edit ? 'editRows' : 'addRows' )};
+                                $rowType = ($dataTypeRows->where('field', 'title')->first())['type'];
+                            @endphp
+                            @if ($rowType == 'text_area')
+                                <textarea class="form-control" id="title" name="title" placeholder="{{ __('voyager::generic.title') }}" value="{{ $dataTypeContent->title ?? '' }}">{{ $dataTypeContent->title ?? '' }}</textarea>
+                            @else
+                                <input type="text" class="form-control" id="title" name="title" placeholder="{{ __('voyager::generic.title') }}" value="{{ $dataTypeContent->title ?? '' }}">
+                            @endif
                         </div>
                     </div>
 
@@ -202,10 +210,16 @@
                                     '_field_name'  => 'slug',
                                     '_field_trans' => get_field_translations($dataTypeContent, 'slug')
                                 ])
-                                <input type="text" class="form-control" id="slug" name="slug"
-                                    placeholder="slug"
-                                    {!! isFieldSlugAutoGenerator($dataType, $dataTypeContent, "slug") !!}
-                                    value="{{ $dataTypeContent->slug ?? '' }}">
+                                @if( $rowType == 'text_area')
+                                    <input type="text" class="form-control" id="slug" name="slug"
+                                        placeholder="slug"
+                                        value="{{ $dataTypeContent->title ?? '' }}">
+                                @else
+                                    <input type="text" class="form-control" id="slug" name="slug"
+                                        placeholder="slug"
+                                        {!! isFieldSlugAutoGenerator($dataType, $dataTypeContent, "slug") !!}
+                                        value="{{ $dataTypeContent->slug ?? '' }}">
+                                @endif
                             </div>
                             <div class="form-group">
                                 <label for="status">{{ __('voyager::post.status') }}</label>
@@ -389,6 +403,12 @@
                 $('#confirm_delete_modal').modal('hide');
             });
             $('[data-toggle="tooltip"]').tooltip();
+            if ($('#title')[0].nodeName === 'TEXTAREA') {
+                $('#title').keyup( function () {
+                        $('#slug')[0].value = $('#title')[0].value;
+                    }
+                );
+            };
         });
     </script>
 @stop
